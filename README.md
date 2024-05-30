@@ -1,8 +1,18 @@
 # Prepare Requirement
 - golang
-- macos OR linux
+- MacOs OR Linux
 
 # Installation
-1. git clone git@github.com/Sunchiii/go-module-generator
-2. cd go-module-generator
-3. ./install.sh
+```
+git clone git@github.com/Sunchiii/go-module-generator
+```
+```
+cd go-module-generator
+```
+```
+./install.sh
+```
+
+# Usege
+> [!IMPORTANT]
+> In your directory structure must has been "/src/"
