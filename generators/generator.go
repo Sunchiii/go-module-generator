@@ -171,7 +171,7 @@ func CreateRepositories(filename string, projectName string) {
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, `"gorm.io/gorm"`)
 		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, `"%s%s/models"`, projectName, WORKDIR)
+		fmt.Fprintf(destination, `"%s/%smodels"`, projectName, WORKDIR)
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, ")")
 		fmt.Fprintf(destination, "\n\n")
@@ -235,7 +235,7 @@ func CreateServices(filename string, projectName string) {
 		fmt.Fprintf(destination, `import (`)
 
 		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, `"%s%s/repositories"`, projectName, WORKDIR)
+		fmt.Fprintf(destination, `"%s/%srepositories"`, projectName, WORKDIR)
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, `)`)
 
@@ -314,7 +314,7 @@ func CreateControllers(filename string, projectName string) {
 		fmt.Fprintf(destination, `import (`)
 
 		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, `"%s%s/services"`, projectName, WORKDIR)
+		fmt.Fprintf(destination, `"%s/%sservices"`, projectName, WORKDIR)
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, `)`)
 
