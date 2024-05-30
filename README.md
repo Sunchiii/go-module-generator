@@ -16,3 +16,7 @@ cd go-module-generator
 # Usege
 > [!IMPORTANT]
 > In your directory structure must has been "/src/"
+
+```
+go-gen <yourServiceName>
+```
