@@ -14,16 +14,23 @@ cd go-module-generator
 ```
 
 ### MacOs OR Linux
-
+Run this command in your terminal
 ```
-./install.sh
+$ ./install.sh
 ```
 
 ### Windows
 
-```
-install.bat
-```
+To add a directory to your system's PATH:
+
+1. Copy this floder to Local Disk (C:)
+2. Right-click on 'This PC' or 'Computer' on your desktop or in File Explorer.
+3. Click on 'Properties'.
+4. Click on 'Advanced system settings'.
+5. Click on the 'Environment Variables' button.
+6. In the 'System variables' section, find the Path variable and select it.
+7. Click 'Edit', then 'New', and add the directory path (C:\go-module-generator).
+8. Click 'OK' to close all windows.
 
 # Usege
 
