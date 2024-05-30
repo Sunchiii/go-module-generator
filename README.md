@@ -4,7 +4,7 @@
 
 # Installation
 ```
-git clone git@github.com/Sunchiii/go-module-generator
+git clone git@github.com:Sunchiii/go-module-generator.git
 ```
 ```
 cd go-module-generator
