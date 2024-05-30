@@ -41,7 +41,7 @@ func CreateRequests(filename string) {
 		}
 	}
 
-	path := "requests/"
+	path := WORKDIR + "requests/"
 	file := path + filename + "_request" + ".go"
 	var _, err = os.Stat(file)
 
@@ -73,7 +73,7 @@ func CreateResponses(filename string) {
 			fmt.Println(err)
 		}
 	}
-	path := "responses/"
+	path := WORKDIR + "responses/"
 	file := path + filename + "_response" + ".go"
 	var _, err = os.Stat(file)
 
@@ -105,7 +105,7 @@ func CreateModels(filename string) {
 		}
 	}
 
-	path := "models/"
+	path := WORKDIR + "models/"
 	file := path + filename + ".go"
 	var _, err = os.Stat(file)
 
@@ -144,7 +144,7 @@ func CreateRepositories(filename string, projectName string) {
 		}
 	}
 
-	path := "repositories/"
+	path := WORKDIR + "repositories/"
 	file := path + filename + "_repository" + ".go"
 	var _, err = os.Stat(file)
 
@@ -209,7 +209,7 @@ func CreateServices(filename string, projectName string) {
 		}
 	}
 
-	path := "services/"
+	path := WORKDIR + "services/"
 	file := path + filename + "_service" + ".go"
 	var _, err = os.Stat(file)
 
@@ -288,7 +288,7 @@ func CreateControllers(filename string, projectName string) {
 		}
 	}
 
-	path := "controllers/"
+	path := WORKDIR + "controllers/"
 	file := path + filename + "_controller" + ".go"
 	var _, err = os.Stat(file)
 
