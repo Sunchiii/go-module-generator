@@ -11,6 +11,10 @@ import (
 	"golang.org/x/text/language"
 )
 
+var (
+	WORKDIR = "src/"
+)
+
 func GenerateModules(filename string) {
 	filename = strings.ToLower(filename)
 
@@ -29,7 +33,7 @@ func GenerateModules(filename string) {
 }
 
 func CreateRequests(filename string) {
-	pathFolder := "requests"
+	pathFolder := WORKDIR + "requests"
 	if _, err := os.Stat(pathFolder); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(pathFolder, os.ModePerm)
 		if err != nil {
@@ -62,7 +66,7 @@ func CreateRequests(filename string) {
 }
 
 func CreateResponses(filename string) {
-	pathFolder := "responses"
+	pathFolder := WORKDIR + "responses"
 	if _, err := os.Stat(pathFolder); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(pathFolder, os.ModePerm)
 		if err != nil {
@@ -93,7 +97,7 @@ func CreateResponses(filename string) {
 }
 
 func CreateModels(filename string) {
-	pathFolder := "models"
+	pathFolder := WORKDIR + "models"
 	if _, err := os.Stat(pathFolder); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(pathFolder, os.ModePerm)
 		if err != nil {
@@ -132,7 +136,7 @@ func CreateModels(filename string) {
 }
 
 func CreateRepositories(filename string, projectName string) {
-	pathFolder := "repositories"
+	pathFolder := WORKDIR + "repositories"
 	if _, err := os.Stat(pathFolder); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(pathFolder, os.ModePerm)
 		if err != nil {
@@ -197,7 +201,7 @@ func CreateRepositories(filename string, projectName string) {
 }
 
 func CreateServices(filename string, projectName string) {
-	pathFolder := "services"
+	pathFolder := WORKDIR + "services"
 	if _, err := os.Stat(pathFolder); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(pathFolder, os.ModePerm)
 		if err != nil {
@@ -276,7 +280,7 @@ func CreateServices(filename string, projectName string) {
 }
 
 func CreateControllers(filename string, projectName string) {
-	pathFolder := "controllers"
+	pathFolder := WORKDIR + "controllers"
 	if _, err := os.Stat(pathFolder); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(pathFolder, os.ModePerm)
 		if err != nil {
