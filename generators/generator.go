@@ -11,8 +11,14 @@ import (
 	"golang.org/x/text/language"
 )
 
-func GenerateModules(filename string, projectName string) {
+func GenerateModules(filename string) {
 	filename = strings.ToLower(filename)
+
+	projectName, err := getProjectName()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	CreateRequests(filename)
 	CreateResponses(filename)

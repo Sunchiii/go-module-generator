@@ -16,11 +16,6 @@ func main() {
 	}
 
 	moduleName := flag.Arg(0)
-	projectName, err := generators.GetProjectName()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
 
-	generators.GenerateModules(moduleName, projectName)
+	generators.GenerateModules(moduleName)
 }
