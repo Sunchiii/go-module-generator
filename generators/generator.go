@@ -15,6 +15,102 @@ var (
 	WORKDIR = "src/"
 )
 
+func GenerateInitialStructure() {
+	projectName, err := getProjectName()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	CreateConfigEnv(projectName)
+}
+
+func CreateConfigEnv(projectName string) {
+	pathFolder := "config"
+	if _, err := os.Stat(pathFolder); errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir(pathFolder, os.ModePerm)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
+	path := "config/"
+	file := path + "env.go"
+	var _, err = os.Stat(file)
+
+	if os.IsNotExist(err) {
+		destination, err := os.Create(file)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer destination.Close()
+		fmt.Fprintf(destination, "import (")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	github.com/spf13/viper")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	%s/logs", projectName)
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	strings")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, ")")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "func Init() {")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	viper.SetConfigName(\"config\")")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	viper.SetConfigType(\"yaml\")")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	viper.SetConfigPath(\"./\")")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	viper.AutomaticEnv()")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	viper.SetEnvKeyReplacer(strings.NewReplacer(\".\", \"_\"))")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	err := viper.ReadInConfig()")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	if err != nil {")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	fmt.Println(\"ERROR_READING_CONFIG_FILE\", err)")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	logs.Error(\"ERROR_READING_CONFIG_FILE\")")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	return")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "}")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	fmt.Println(\"SUCCESS_READING_CONFIG_FILE\")")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "}")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "func GetEnv(key, defaultValue string) string {")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	readValue := viper.GetString(key)")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	if readValue == \"\" {")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "		return defaultValue")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	}")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	return readValue")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "}")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "func Env(key string) string {")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	readValue := viper.GetString(key)")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	return readValue")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "}")
+	} else {
+		fmt.Println("File already exists!", file)
+		return
+	}
+
+	fmt.Println("Created Config successfully", file)
+}
+
 func GenerateModules(filename string) {
 	filename = strings.ToLower(filename)
 
