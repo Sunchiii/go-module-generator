@@ -22,6 +22,7 @@ func GenerateInitialStructure() {
 		os.Exit(1)
 	}
 	CreateConfigEnv(projectName)
+	CreateAppErrs()
 }
 
 func CreateConfigEnv(projectName string) {
@@ -109,6 +110,65 @@ func CreateConfigEnv(projectName string) {
 	}
 
 	fmt.Println("Created Config successfully", file)
+}
+
+func CreateAppErrs() {
+	pathFolder := "errs"
+	if _, err := os.Stat(pathFolder); os.IsNotExist(err) {
+		err := os.Mkdir(pathFolder, os.ModePerm)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
+	path := "errs/"
+	file := path + "errors.go"
+	if _, err := os.Stat(file); os.IsNotExist(err) {
+		destination, err := os.Create(file)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer destination.Close()
+
+		fmt.Fprintf(destination, "package errs\n\n")
+		fmt.Fprintf(destination, "import \"net/http\"\n\n")
+		fmt.Fprintf(destination, "type AppError struct {\n")
+		fmt.Fprintf(destination, "	Status  int\n")
+		fmt.Fprintf(destination, "	Message string\n")
+		fmt.Fprintf(destination, "}\n\n")
+		fmt.Fprintf(destination, "func (a AppError) Error() string {\n")
+		fmt.Fprintf(destination, "	return a.Message\n")
+		fmt.Fprintf(destination, "}\n\n")
+		fmt.Fprintf(destination, "func NewError(code int, errMsg string) error {\n")
+		fmt.Fprintf(destination, "	return AppError{\n")
+		fmt.Fprintf(destination, "		Status:  code,\n")
+		fmt.Fprintf(destination, "		Message: errMsg,\n")
+		fmt.Fprintf(destination, "	}\n")
+		fmt.Fprintf(destination, "}\n\n")
+		fmt.Fprintf(destination, "func ErrorBadRequest(errorMessage string) error {\n")
+		fmt.Fprintf(destination, "	return AppError{\n")
+		fmt.Fprintf(destination, "		Status:  http.StatusBadRequest,\n")
+		fmt.Fprintf(destination, "		Message: errorMessage,\n")
+		fmt.Fprintf(destination, "	}\n")
+		fmt.Fprintf(destination, "}\n\n")
+		fmt.Fprintf(destination, "func ErrorUnprocessableEntity(errorMessage string) error {\n")
+		fmt.Fprintf(destination, "	return AppError{\n")
+		fmt.Fprintf(destination, "		Status:  http.StatusUnprocessableEntity,\n")
+		fmt.Fprintf(destination, "		Message: errorMessage,\n")
+		fmt.Fprintf(destination, "	}\n")
+		fmt.Fprintf(destination, "}\n\n")
+		fmt.Fprintf(destination, "func ErrorInternalServerError(errorMessage string) error {\n")
+		fmt.Fprintf(destination, "	return AppError{\n")
+		fmt.Fprintf(destination, "		Status:  http.StatusInternalServerError,\n")
+		fmt.Fprintf(destination, "		Message: errorMessage,\n")
+		fmt.Fprintf(destination, "	}\n")
+		fmt.Fprintf(destination, "}\n")
+
+		fmt.Println("Created AppErrs successfully", file)
+	} else {
+		fmt.Println("File already exists!", file)
+	}
 }
 
 func GenerateModules(filename string) {
