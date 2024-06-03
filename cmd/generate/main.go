@@ -15,7 +15,7 @@ import (
 func main() {
 	flag.Parse()
 	if flag.NArg() < 1 {
-		fmt.Println("Usage: generate <module_name>||init")
+		fmt.Println("Usage: go-gen <module_name>||init")
 		os.Exit(1)
 	}
 
