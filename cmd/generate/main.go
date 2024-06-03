@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -34,7 +35,10 @@ func main() {
 			log.Fatal("Project name must not contain space")
 		}
 
-		cmd := exec.Command(fmt.Sprintf("go mod init %s", projectName))
+		cmd := exec.Command("go", "mod", "init", projectName)
+		if errors.Is(cmd.Err, exec.ErrDot) {
+			cmd.Err = nil
+		}
 		if err := cmd.Run(); err != nil {
 			log.Fatal(err)
 		}
