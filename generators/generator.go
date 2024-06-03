@@ -22,12 +22,138 @@ func GenerateInitialStructure() {
 		os.Exit(1)
 	}
 	CreateConfigEnv(projectName)
+	CreateDatabaseConnection(projectName)
 	CreateLoggers(projectName)
 	CreatePagination(projectName)
 	CreateAppErrs()
 	CreateRoutes()
 	CreateFiberRoutes(projectName)
 	CreateHandleResponse(projectName)
+	CreateValidation()
+}
+
+func CreateValidation() {
+	pathFolder := "validation"
+	if _, err := os.Stat(pathFolder); os.IsNotExist(err) {
+		err := os.Mkdir(pathFolder, os.ModePerm)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+
+	path := pathFolder + "/"
+	file := path + "fiber.go"
+	var _, err = os.Stat(file)
+
+	if os.IsNotExist(err) {
+		destination, err := os.Create(file)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer destination.Close()
+
+		fmt.Fprintf(destination, "package validation\n\n")
+		fmt.Fprintf(destination, "import \"github.com/go-playground/validator/v10\"\n\n")
+		fmt.Fprintf(destination, "type ErrorResponse struct {\n")
+		fmt.Fprintf(destination, "	FailedField string `json:\"failed_field\"`\n")
+		fmt.Fprintf(destination, "	Tag         string `json:\"tag\"`\n")
+		fmt.Fprintf(destination, "	Value       string `json:\"value\"`\n")
+		fmt.Fprintf(destination, "}\n\n")
+		fmt.Fprintf(destination, "func ValidateStruct(myStruct interface{}) (string, error) {\n")
+		fmt.Fprintf(destination, "	var errorX []*ErrorResponse\n")
+		fmt.Fprintf(destination, "	validate := validator.New()\n")
+		fmt.Fprintf(destination, "	err := validate.Struct(myStruct)\n")
+		fmt.Fprintf(destination, "	if err != nil {\n")
+		fmt.Fprintf(destination, "		for _, err := range err.(validator.ValidationErrors) {\n")
+		fmt.Fprintf(destination, "			var element ErrorResponse\n")
+		fmt.Fprintf(destination, "			element.FailedField = err.Field() + \" \" + err.Tag() + \" \" + err.Param()\n")
+		fmt.Fprintf(destination, "			element.Tag = err.Tag()\n")
+		fmt.Fprintf(destination, "			element.Value = err.Param()\n")
+		fmt.Fprintf(destination, "			errorX = append(errorX, &element)\n")
+		fmt.Fprintf(destination, "		}\n")
+		fmt.Fprintf(destination, "	}\n")
+		fmt.Fprintf(destination, "	if errorX != nil {\n")
+		fmt.Fprintf(destination, "		return errorX[0].FailedField, err\n")
+		fmt.Fprintf(destination, "	}\n")
+		fmt.Fprintf(destination, "	return \"\", nil\n")
+		fmt.Fprintf(destination, "}\n")
+
+		fmt.Println("Created Validation successfully:", file)
+	} else {
+		fmt.Println("File already exists!", file)
+	}
+}
+
+func CreateDatabaseConnection(projectName string) {
+	pathFolder := "database"
+	if _, err := os.Stat(pathFolder); os.IsNotExist(err) {
+		err := os.Mkdir(pathFolder, os.ModePerm)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+
+	path := pathFolder + "/"
+	file := path + "postgres.go"
+	var _, err = os.Stat(file)
+
+	if os.IsNotExist(err) {
+		destination, err := os.Create(file)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer destination.Close()
+
+		fmt.Fprintf(destination, "package database\n\n")
+		fmt.Fprintf(destination, "import (\n")
+		fmt.Fprintf(destination, "	\"fmt\"\n")
+		fmt.Fprintf(destination, "	\"%s/config\"\n", projectName)
+		fmt.Fprintf(destination, "	\"%s/logs\"\n", projectName)
+		fmt.Fprintf(destination, "	\"gorm.io/driver/postgres\"\n")
+		fmt.Fprintf(destination, "	\"gorm.io/gorm\"\n")
+		fmt.Fprintf(destination, "	\"gorm.io/gorm/logger\"\n")
+		fmt.Fprintf(destination, "	\"log\"\n")
+		fmt.Fprintf(destination, "	\"time\"\n")
+		fmt.Fprintf(destination, ")\n\n")
+		fmt.Fprintf(destination, "type SqlLogger struct {\n")
+		fmt.Fprintf(destination, "	logger.Interface\n")
+		fmt.Fprintf(destination, "}\n\n")
+		fmt.Fprintf(destination, "var openConnectionDB *gorm.DB\n")
+		fmt.Fprintf(destination, "var err error\n\n")
+		fmt.Fprintf(destination, "func PostgresConnection() (*gorm.DB, error) {\n")
+		fmt.Fprintf(destination, "	myDSN := fmt.Sprintf(\"host=%%v user=%%v password=%%v dbname=%%v port=%%v sslmode=disable TimeZone=Asia/Bangkok\",\n")
+		fmt.Fprintf(destination, "		config.Env(\"postgres.host\"),\n")
+		fmt.Fprintf(destination, "		config.Env(\"postgres.user\"),\n")
+		fmt.Fprintf(destination, "		config.Env(\"postgres.password\"),\n")
+		fmt.Fprintf(destination, "		config.Env(\"postgres.database\"),\n")
+		fmt.Fprintf(destination, "		config.Env(\"postgres.port\"),\n")
+		fmt.Fprintf(destination, "	)\n\n")
+		fmt.Fprintf(destination, "	fmt.Println(\"CONNECTING_TO_POSTGRES_DB\")\n")
+		fmt.Fprintf(destination, "	openConnectionDB, err = gorm.Open(postgres.Open(myDSN), &gorm.Config{\n")
+		fmt.Fprintf(destination, "		Logger: logger.Default.LogMode(logger.Info),\n")
+		fmt.Fprintf(destination, "		NowFunc: func() time.Time {\n")
+		fmt.Fprintf(destination, "			ti, _ := time.LoadLocation(\"Asia/Bangkok\")\n")
+		fmt.Fprintf(destination, "			return time.Now().In(ti)\n")
+		fmt.Fprintf(destination, "		},\n")
+		fmt.Fprintf(destination, "	})\n")
+		fmt.Fprintf(destination, "	//DryRun: false,\n")
+		fmt.Fprintf(destination, "	if err != nil {\n")
+		fmt.Fprintf(destination, "		logs.Error(err)\n")
+		fmt.Fprintf(destination, "		log.Fatal(\"ERROR_PING_POSTGRES\", err)\n")
+		fmt.Fprintf(destination, "		return nil, err\n")
+		fmt.Fprintf(destination, "	}\n")
+		fmt.Fprintf(destination, "	fmt.Println(\"POSTGRES_CONNECTED\")\n")
+		fmt.Fprintf(destination, "	return openConnectionDB, nil\n")
+		fmt.Fprintf(destination, "}\n")
+
+		fmt.Println("Created Database Connection successfully:", file)
+	} else {
+		fmt.Println("File already exists!", file)
+	}
 }
 
 func CreateHandleResponse(projectName string) {
