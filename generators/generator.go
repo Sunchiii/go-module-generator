@@ -27,6 +27,96 @@ func GenerateInitialStructure() {
 	CreateAppErrs()
 	CreateRoutes()
 	CreateFiberRoutes(projectName)
+	CreateHandleResponse(projectName)
+}
+
+func CreateHandleResponse(projectName string) {
+	pathFolder := "responses"
+	if _, err := os.Stat(pathFolder); os.IsNotExist(err) {
+		err := os.Mkdir(pathFolder, os.ModePerm)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+
+	path := pathFolder + "/"
+	file := path + "handle_responses.go"
+	var _, err = os.Stat(file)
+
+	if os.IsNotExist(err) {
+		destination, err := os.Create(file)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer destination.Close()
+
+		fmt.Fprintf(destination, "package responses\n\n")
+		fmt.Fprintf(destination, "import (\n")
+		fmt.Fprintf(destination, "	\"github.com/gofiber/fiber/v2\"\n")
+		fmt.Fprintf(destination, "	\"%s/errs\"\n", projectName)
+		fmt.Fprintf(destination, "	\"net/http\"\n")
+		fmt.Fprintf(destination, ")\n\n")
+		fmt.Fprintf(destination, "var (\n")
+		fmt.Fprintf(destination, "	code    int\n")
+		fmt.Fprintf(destination, "	message string\n")
+		fmt.Fprintf(destination, ")\n\n")
+		fmt.Fprintf(destination, "type ErrorResponse struct {\n")
+		fmt.Fprintf(destination, "	Status bool   `json:\"status\"`\n")
+		fmt.Fprintf(destination, "	Error  string `json:\"error\"`\n")
+		fmt.Fprintf(destination, "}\n\n")
+		fmt.Fprintf(destination, "func NewErrorResponses(ctx *fiber.Ctx, err error) error {\n")
+		fmt.Fprintf(destination, "	switch e := err.(type) {\n")
+		fmt.Fprintf(destination, "	case errs.AppError:\n")
+		fmt.Fprintf(destination, "		code = e.Status\n")
+		fmt.Fprintf(destination, "		message = e.Message\n")
+		fmt.Fprintf(destination, "	case error:\n")
+		fmt.Fprintf(destination, "		code = http.StatusUnprocessableEntity\n")
+		fmt.Fprintf(destination, "		message = err.Error()\n")
+		fmt.Fprintf(destination, "	}\n")
+		fmt.Fprintf(destination, "	errorResponse := ErrorResponse{\n")
+		fmt.Fprintf(destination, "		Status: false,\n")
+		fmt.Fprintf(destination, "		Error:  message,\n")
+		fmt.Fprintf(destination, "	}\n")
+		fmt.Fprintf(destination, "	return ctx.Status(code).JSON(errorResponse)\n")
+		fmt.Fprintf(destination, "}\n\n")
+		fmt.Fprintf(destination, "func NewSuccessResponse(ctx *fiber.Ctx, data interface{}) error {\n")
+		fmt.Fprintf(destination, "	return ctx.Status(http.StatusOK).JSON(fiber.Map{\n")
+		fmt.Fprintf(destination, "		\"status\": true,\n")
+		fmt.Fprintf(destination, "		\"data\":   data,\n")
+		fmt.Fprintf(destination, "	})\n")
+		fmt.Fprintf(destination, "}\n\n")
+		fmt.Fprintf(destination, "func NewSuccessMsg(ctx *fiber.Ctx, msg interface{}) error {\n")
+		fmt.Fprintf(destination, "	return ctx.Status(http.StatusOK).JSON(fiber.Map{\n")
+		fmt.Fprintf(destination, "		\"status\": true,\n")
+		fmt.Fprintf(destination, "		\"msg\":    msg,\n")
+		fmt.Fprintf(destination, "	})\n")
+		fmt.Fprintf(destination, "}\n\n")
+		fmt.Fprintf(destination, "func NewCreateSuccessResponse(ctx *fiber.Ctx, data interface{}) error {\n")
+		fmt.Fprintf(destination, "	return ctx.Status(http.StatusCreated).JSON(fiber.Map{\n")
+		fmt.Fprintf(destination, "		\"status\": true,\n")
+		fmt.Fprintf(destination, "		\"data\":   data,\n")
+		fmt.Fprintf(destination, "	})\n")
+		fmt.Fprintf(destination, "}\n\n")
+		fmt.Fprintf(destination, "func NewSuccessMessage(ctx *fiber.Ctx, data interface{}) error {\n")
+		fmt.Fprintf(destination, "	return ctx.Status(http.StatusOK).JSON(fiber.Map{\n")
+		fmt.Fprintf(destination, "		\"status\":  true,\n")
+		fmt.Fprintf(destination, "		\"message\": data,\n")
+		fmt.Fprintf(destination, "	})\n")
+		fmt.Fprintf(destination, "}\n\n")
+		fmt.Fprintf(destination, "func NewErrorValidate(ctx *fiber.Ctx, data interface{}) error {\n")
+		fmt.Fprintf(destination, "	validateError := fiber.Map{\n")
+		fmt.Fprintf(destination, "		\"error\":  data,\n")
+		fmt.Fprintf(destination, "		\"status\": false,\n")
+		fmt.Fprintf(destination, "	}\n")
+		fmt.Fprintf(destination, "	return ctx.Status(http.StatusUnprocessableEntity).JSON(validateError)\n")
+		fmt.Fprintf(destination, "}\n")
+
+		fmt.Println("Created responses package successfully:", file)
+	} else {
+		fmt.Println("File already exists!", file)
+	}
 }
 
 func CreateConfigEnv(projectName string) {
