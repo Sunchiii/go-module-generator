@@ -44,6 +44,9 @@ go-gen init
 ```
 Enter Project Name: <yourProjectName>
 ```
+```
+go mod tidy
+```
 
 ### use for generate module
 > [!IMPORTANT]
