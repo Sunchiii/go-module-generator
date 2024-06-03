@@ -363,7 +363,7 @@ func CreateConfigEnv(projectName string) {
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, "	viper.SetConfigType(\"yaml\")")
 		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, "	viper.SetConfigPath(\"./\")")
+		fmt.Fprintf(destination, "	viper.AddConfigPath(\"./\")")
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, "	viper.AutomaticEnv()")
 		fmt.Fprintf(destination, "\n")
