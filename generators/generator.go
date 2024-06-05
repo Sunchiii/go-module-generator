@@ -359,7 +359,7 @@ func CreateConfigEnv(projectName string) {
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, ")")
 		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, "func Init() {")
+		fmt.Fprintf(destination, "func init() {")
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, "	viper.SetConfigName(\"config\")")
 		fmt.Fprintf(destination, "\n")
