@@ -351,6 +351,8 @@ func CreateConfigEnv(projectName string) {
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, "	\"github.com/spf13/viper\"")
 		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "	\"fmt\"")
+		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, "	\"%s/logs\"", projectName)
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, "	\"strings\"")
