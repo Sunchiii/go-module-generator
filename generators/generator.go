@@ -1090,10 +1090,10 @@ func CreateExampleConfig() {
 
 		// Write the logging package code to the file
 		fmt.Fprintf(destination, "app:\n")
-		fmt.Fprintf(destination, " port: 8080\n")
+		fmt.Fprintf(destination, "  port: 8080\n")
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, "secrete:\n")
-		fmt.Fprintf(destination, " jwt: \"secrete\"\n")
+		fmt.Fprintf(destination, "  jwt: \"secrete\"\n")
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, "postgres:\n")
 		fmt.Fprintf(destination, "  host: localhost\n")
