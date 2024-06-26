@@ -32,6 +32,8 @@ func GenerateInitialStructure() {
 	CreateValidation()
 	CreateMainGo(projectName)
 	CreateSrcDir()
+	CreateExampleConfig()
+	GenerateModules("example")
 }
 
 func CreateMainGo(projectName string) {
@@ -67,6 +69,9 @@ func CreateMainGo(projectName string) {
 		fmt.Fprintf(destination, "	\"%s/database\"\n", projectName)
 		fmt.Fprintf(destination, "	\"%s/logs\"\n", projectName)
 		fmt.Fprintf(destination, "	\"%s/routes\"\n", projectName)
+		fmt.Fprintf(destination, "	\"%s/src/controllers\"\n", projectName)
+		fmt.Fprintf(destination, "	\"%s/src/services\"\n", projectName)
+		fmt.Fprintf(destination, "	\"%s/src/repositories\"\n", projectName)
 		fmt.Fprintf(destination, "	\"log\"\n")
 		fmt.Fprintf(destination, ")\n\n")
 		fmt.Fprintf(destination, "func main() {\n\n")
@@ -77,9 +82,9 @@ func CreateMainGo(projectName string) {
 		fmt.Fprintf(destination, "		return\n")
 		fmt.Fprintf(destination, "	}\n\n")
 		fmt.Fprintf(destination, "	//basic structure\n")
-		fmt.Fprintf(destination, "	//newRepository := repositories.NewRepository(postgresConnection)\n")
-		fmt.Fprintf(destination, "	//newService := services.NewService(newRepository)\n\n")
-		fmt.Fprintf(destination, "	//connect route\n")
+		fmt.Fprintf(destination, "	newRepository := repositories.NewExampleRepository(postgresConnection)\n")
+		fmt.Fprintf(destination, "	newService := services.NewExampleService(newRepository)\n\n")
+		fmt.Fprintf(destination, "	// connect route\n")
 		fmt.Fprintf(destination, "	app := fiber.New(fiber.Config{\n")
 		fmt.Fprintf(destination, "		JSONEncoder: json.Marshal,\n")
 		fmt.Fprintf(destination, "		JSONDecoder: json.Unmarshal,\n")
@@ -87,12 +92,12 @@ func CreateMainGo(projectName string) {
 		fmt.Fprintf(destination, "	app.Use(logger.New())\n")
 		fmt.Fprintf(destination, "	app.Use(cors.New())\n\n")
 		fmt.Fprintf(destination, "	//example routes\n")
-		fmt.Fprintf(destination, "	// newController := controllers.NewController(newService)\n")
-		fmt.Fprintf(destination, "	// newWebRoute := routes.NewWebRoutes(\n")
-		fmt.Fprintf(destination, "	// 	newController,\n")
+		fmt.Fprintf(destination, "	 newExampleController := controllers.NewExampleController(newService)\n")
+		fmt.Fprintf(destination, "	 newRoute := routes.NewFiberRoutes(\n")
+		fmt.Fprintf(destination, "	 	newExampleController,\n")
 		fmt.Fprintf(destination, "	 	//new web controller\n")
-		fmt.Fprintf(destination, "	// )\n")
-		fmt.Fprintf(destination, "	// newWebRoute.Install(app)\n\n")
+		fmt.Fprintf(destination, "	 )\n")
+		fmt.Fprintf(destination, "	 newRoute.Install(app)\n\n")
 		fmt.Fprintf(destination, "	log.Fatal(app.Listen(fmt.Sprintf(\":%%s\", config.Env(\"app.port\"))))\n")
 		fmt.Fprintf(destination, "}\n")
 
@@ -659,25 +664,25 @@ func CreateFiberRoutes(projectName string) {
 
 		fmt.Fprintf(destination, "package routes\n\n")
 		fmt.Fprintf(destination, "import (\n")
-		fmt.Fprintf(destination, "// 	\"%s/%scontrollers\"\n", projectName, WORKDIR)
+		fmt.Fprintf(destination, " 	\"%s/%scontrollers\"\n", projectName, WORKDIR)
 		fmt.Fprintf(destination, "	\"github.com/gofiber/fiber/v2\"\n")
 		fmt.Fprintf(destination, ")\n\n")
 		fmt.Fprintf(destination, "type fiberRoutes struct {\n")
-		fmt.Fprintf(destination, "// 	controller controllers.Controller\n")
+		fmt.Fprintf(destination, " 	controller controllers.ExampleController\n")
 		fmt.Fprintf(destination, "}\n\n")
 		fmt.Fprintf(destination, "func (r fiberRoutes) Install(app *fiber.App) {\n")
 		fmt.Fprintf(destination, "	route := app.Group(\"api/\", func(ctx *fiber.Ctx) error {\n")
 		fmt.Fprintf(destination, "		return ctx.Next()\n")
 		fmt.Fprintf(destination, "	})\n")
-		fmt.Fprintf(destination, "	// route.Post(\"hello\", r.controller.StartController)\n")
+		fmt.Fprintf(destination, "	route.Get(\"ping\", r.controller.PingController)\n")
 		fmt.Fprintf(destination, "}\n\n")
-		fmt.Fprintf(destination, "// func NewWebRoutes(\n")
-		fmt.Fprintf(destination, "// 	controller controllers.Controller,\n")
-		fmt.Fprintf(destination, "// ) Routes {\n")
-		fmt.Fprintf(destination, "// 	return &fiberRoutes{\n")
-		fmt.Fprintf(destination, "// 		controller: controller,\n")
-		fmt.Fprintf(destination, "// 	}\n")
-		fmt.Fprintf(destination, "// }\n")
+		fmt.Fprintf(destination, " func NewFiberRoutes(\n")
+		fmt.Fprintf(destination, " 	controller controllers.ExampleController,\n")
+		fmt.Fprintf(destination, " ) Routes {\n")
+		fmt.Fprintf(destination, " 	return &fiberRoutes{\n")
+		fmt.Fprintf(destination, " 		controller: controller,\n")
+		fmt.Fprintf(destination, " 	}\n")
+		fmt.Fprintf(destination, " }\n")
 
 		fmt.Println("Created fiber_routes.go successfully:", file)
 	} else {
@@ -986,12 +991,13 @@ func CreateControllers(filename string, projectName string) {
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, `"%s/%sservices"`, projectName, WORKDIR)
 		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, `	"github.com/gofiber/fiber/v2"`)
 		fmt.Fprintf(destination, `)`)
 
 		fmt.Fprintf(destination, "\n\n")
 		fmt.Fprintf(destination, `type %sController interface{`, upperString)
 		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, `//Insert your function interface`)
+		fmt.Fprintf(destination, `	PingController(ctx *fiber.Ctx) error`)
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, `}`)
 		fmt.Fprintf(destination, "\n\n")
@@ -1018,6 +1024,17 @@ func CreateControllers(filename string, projectName string) {
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, `}`)
 
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, `}`)
+		fmt.Fprintf(destination, "\n")
+
+		fmt.Fprintf(destination, `func (c *exampleController) PingController(ctx *fiber.Ctx) error {`)
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, `	return ctx.JSON(fiber.Map{`)
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, `			"message": "pong",`)
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, `	})`)
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, `}`)
 	} else {
@@ -1048,4 +1065,50 @@ func getProjectName() (string, error) {
 	}
 
 	return "", errors.New("could not determine module name")
+}
+
+func CreateExampleConfig() {
+	pathFolder := "./"
+	if _, err := os.Stat(pathFolder); errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir(pathFolder, os.ModePerm)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
+	path := pathFolder
+	file := path + "example.config.yaml"
+	var _, err = os.Stat(file)
+
+	if os.IsNotExist(err) {
+		destination, err := os.Create(file)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer destination.Close()
+
+		// Write the logging package code to the file
+		fmt.Fprintf(destination, "app:\n")
+		fmt.Fprintf(destination, "	port: 8080\n")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "secrete:\n")
+		fmt.Fprintf(destination, "	jwt: \"secrete\"\n")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "postgres:\n")
+		fmt.Fprintf(destination, "	host: localhost\n")
+		fmt.Fprintf(destination, "	port: 5432\n")
+		fmt.Fprintf(destination, "	user: postgres\n")
+		fmt.Fprintf(destination, "	password: postgres\n")
+		fmt.Fprintf(destination, "	database: postgresdb\n")
+		fmt.Fprintf(destination, "\n")
+		fmt.Fprintf(destination, "redis:\n")
+		fmt.Fprintf(destination, "	host: localhost\n")
+		fmt.Fprintf(destination, "	port: 6479\n")
+
+		fmt.Println("Created Example Config successfully", file)
+	} else {
+		fmt.Println("File already exists!", file)
+		return
+	}
 }
