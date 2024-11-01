@@ -39,6 +39,9 @@ To add a directory to your system's PATH:
 mkdir <yourProjectName>
 ```
 ```
+cd <yourProjectName>
+```
+```
 go-gen init
 ```
 ```
