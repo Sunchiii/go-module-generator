@@ -71,7 +71,6 @@ func CreateMainGo(projectName string) {
 		fmt.Fprintf(destination, "	\"%s/routes\"\n", projectName)
 		fmt.Fprintf(destination, "	\"%s/src/controllers\"\n", projectName)
 		fmt.Fprintf(destination, "	\"%s/src/services\"\n", projectName)
-		fmt.Fprintf(destination, "	\"%s/src/repositories\"\n", projectName)
 		fmt.Fprintf(destination, "	\"log\"\n")
 		fmt.Fprintf(destination, ")\n\n")
 		fmt.Fprintf(destination, "func main() {\n\n")
@@ -82,8 +81,7 @@ func CreateMainGo(projectName string) {
 		fmt.Fprintf(destination, "		return\n")
 		fmt.Fprintf(destination, "	}\n\n")
 		fmt.Fprintf(destination, "	//basic structure\n")
-		fmt.Fprintf(destination, "	newRepository := repositories.NewExampleRepository(postgresConnection)\n")
-		fmt.Fprintf(destination, "	newService := services.NewExampleService(newRepository)\n\n")
+		fmt.Fprintf(destination, "	newService := services.NewExampleService(postgresConnection)\n\n")
 		fmt.Fprintf(destination, "	// connect route\n")
 		fmt.Fprintf(destination, "	app := fiber.New(fiber.Config{\n")
 		fmt.Fprintf(destination, "		JSONEncoder: json.Marshal,\n")
@@ -718,7 +716,7 @@ func GenerateModules(filename string) {
 	CreateRequests(filename)
 	CreateResponses(filename)
 	CreateModels(filename)
-	CreateRepositories(filename, projectName)
+	// CreateRepositories(filename, projectName)
 	CreateServices(filename, projectName)
 	CreateControllers(filename, projectName)
 }
@@ -896,78 +894,54 @@ func CreateServices(filename string, projectName string) {
 	if _, err := os.Stat(pathFolder); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(pathFolder, os.ModePerm)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Error creating directory:", err)
+			return
 		}
 	}
 
 	path := WORKDIR + "services/"
-	file := path + filename + "_service" + ".go"
-	var _, err = os.Stat(file)
-
-	if os.IsNotExist(err) {
+	file := path + filename + "_service.go"
+	if _, err := os.Stat(file); os.IsNotExist(err) {
 		destination, err := os.Create(file)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Error creating file:", err)
 			return
 		}
 		defer destination.Close()
-		upperString := strings.Replace(cases.Title(language.Und, cases.NoLower).String(strings.Replace(filename, "_", " ", -1)), " ", "", -1)
-		lowerString := strings.ToLower(string(upperString[0])) + string(upperString[1:len(upperString)])
-		//pwd, err := os.Getwd()
-		//if err != nil {
-		//	fmt.Println(err)
-		//	os.Exit(1)
-		//}
-		//arr := strings.Split(pwd, "/")
-		//projectName := arr[len(arr)-1]
 
+		// Convert filename to camel case
+		upperString := strings.Replace(cases.Title(language.Und, cases.NoLower).String(strings.Replace(filename, "_", " ", -1)), " ", "", -1)
+		lowerString := strings.ToLower(string(upperString[0])) + upperString[1:]
+
+		// Write the service file content
 		fmt.Fprintf(destination, "package services")
 		fmt.Fprintf(destination, "\n\n")
 		fmt.Fprintf(destination, `import (`)
-
+		fmt.Fprintf(destination, "\n\t\"gorm.io/gorm\"")
+		// fmt.Fprintf(destination, "\n\t\"%s/%smodels\"", projectName, WORKDIR)
 		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, `"%s/%srepositories"`, projectName, WORKDIR)
-		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, `)`)
-
+		fmt.Fprintf(destination, ")")
 		fmt.Fprintf(destination, "\n\n")
-		fmt.Fprintf(destination, `type %sService interface{`, upperString)
+		fmt.Fprintf(destination, "type %sService interface {", upperString)
+		fmt.Fprintf(destination, "\n\t// Insert your function interface")
 		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, `//Insert your function interface`)
-		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, `}`)
+		fmt.Fprintf(destination, "}")
 		fmt.Fprintf(destination, "\n\n")
-		fmt.Fprintf(destination, `type %sService struct {`, lowerString)
+		fmt.Fprintf(destination, "type %sService struct {", lowerString)
+		fmt.Fprintf(destination, "\n\tdb *gorm.DB")
 		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, `repository%s repositories.%sRepository`, upperString, upperString)
-		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, `}`)
-
+		fmt.Fprintf(destination, "}")
 		fmt.Fprintf(destination, "\n\n")
-		fmt.Fprintf(destination, `func New%sService(`, upperString)
+		fmt.Fprintf(destination, "func New%sService(db *gorm.DB) %sService {", upperString, upperString)
+		fmt.Fprintf(destination, "\n\treturn &%sService{db: db}", lowerString)
 		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, `repository%s repositories.%sRepository,`, upperString, upperString)
-		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, "//repo")
-		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, ") %sService {", upperString)
-		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, `	return &%sService{`, lowerString)
-		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, `repository%s :repository%s,`, upperString, upperString)
-		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, "//repo")
-		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, `}`)
-
-		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, `}`)
+		fmt.Fprintf(destination, "}")
 	} else {
-		fmt.Println("File already exists!", file)
+		fmt.Println("File already exists:", file)
 		return
 	}
 
-	fmt.Println("Created Service successfully", file)
+	fmt.Println("Created Service successfully:", file)
 }
 
 func CreateControllers(filename string, projectName string) {
