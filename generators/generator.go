@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Sunchiii/go-module-generator/helper"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -27,7 +28,7 @@ func GenerateInitialStructure() {
 	CreatePagination(projectName)
 	CreateAppErrs()
 	CreateRoutes()
-	CreateFiberRoutes(projectName)
+	CreateFiberRoutes(projectName, "example")
 	CreateHandleResponse(projectName)
 	CreateValidation()
 	CreateMainGo(projectName)
@@ -69,8 +70,6 @@ func CreateMainGo(projectName string) {
 		fmt.Fprintf(destination, "	\"%s/database\"\n", projectName)
 		fmt.Fprintf(destination, "	\"%s/logs\"\n", projectName)
 		fmt.Fprintf(destination, "	\"%s/routes\"\n", projectName)
-		fmt.Fprintf(destination, "	\"%s/src/controllers\"\n", projectName)
-		fmt.Fprintf(destination, "	\"%s/src/services\"\n", projectName)
 		fmt.Fprintf(destination, "	\"log\"\n")
 		fmt.Fprintf(destination, ")\n\n")
 		fmt.Fprintf(destination, "func main() {\n\n")
@@ -81,7 +80,6 @@ func CreateMainGo(projectName string) {
 		fmt.Fprintf(destination, "		return\n")
 		fmt.Fprintf(destination, "	}\n\n")
 		fmt.Fprintf(destination, "	//basic structure\n")
-		fmt.Fprintf(destination, "	newService := services.NewExampleService(postgresConnection)\n\n")
 		fmt.Fprintf(destination, "	// connect route\n")
 		fmt.Fprintf(destination, "	app := fiber.New(fiber.Config{\n")
 		fmt.Fprintf(destination, "		JSONEncoder: json.Marshal,\n")
@@ -90,9 +88,7 @@ func CreateMainGo(projectName string) {
 		fmt.Fprintf(destination, "	app.Use(logger.New())\n")
 		fmt.Fprintf(destination, "	app.Use(cors.New())\n\n")
 		fmt.Fprintf(destination, "	//example routes\n")
-		fmt.Fprintf(destination, "	 newExampleController := controllers.NewExampleController(newService)\n")
 		fmt.Fprintf(destination, "	 newRoute := routes.NewFiberRoutes(\n")
-		fmt.Fprintf(destination, "	 	newExampleController,\n")
 		fmt.Fprintf(destination, "	 	//new web controller\n")
 		fmt.Fprintf(destination, "	 )\n")
 		fmt.Fprintf(destination, "	 newRoute.Install(app)\n\n")
@@ -654,7 +650,7 @@ func CreateRoutes() {
 	}
 }
 
-func CreateFiberRoutes(projectName string) {
+func CreateFiberRoutes(projectName string, newControllerName string) {
 	pathFolder := "routes"
 	if _, err := os.Stat(pathFolder); os.IsNotExist(err) {
 		err := os.Mkdir(pathFolder, os.ModePerm)
@@ -666,9 +662,9 @@ func CreateFiberRoutes(projectName string) {
 
 	path := pathFolder + "/"
 	file := path + "fiber_routes.go"
-	var _, err = os.Stat(file)
 
-	if os.IsNotExist(err) {
+	// Check if the file exists. If not, create it with the initial setup.
+	if _, err := os.Stat(file); os.IsNotExist(err) {
 		destination, err := os.Create(file)
 		if err != nil {
 			fmt.Println(err)
@@ -676,33 +672,91 @@ func CreateFiberRoutes(projectName string) {
 		}
 		defer destination.Close()
 
+		// Write initial setup to fiber_routes.go
 		fmt.Fprintf(destination, "package routes\n\n")
 		fmt.Fprintf(destination, "import (\n")
-		fmt.Fprintf(destination, " 	\"%s/%scontrollers\"\n", projectName, WORKDIR)
+		fmt.Fprintf(destination, "	\"%s/src/controllers\"\n", projectName)
 		fmt.Fprintf(destination, "	\"github.com/gofiber/fiber/v2\"\n")
 		fmt.Fprintf(destination, ")\n\n")
+
+		// Define the fiberRoutes struct with the initial controller
 		fmt.Fprintf(destination, "type fiberRoutes struct {\n")
-		fmt.Fprintf(destination, " 	controller controllers.ExampleController\n")
+		// fmt.Fprintf(destination, "	%s controllers.%sController\n", newControllerName, helper.Capitalize(newControllerName))
 		fmt.Fprintf(destination, "}\n\n")
+
+		// Install method with a basic route
 		fmt.Fprintf(destination, "func (r fiberRoutes) Install(app *fiber.App) {\n")
-		fmt.Fprintf(destination, "	route := app.Group(\"api/\", func(ctx *fiber.Ctx) error {\n")
+		fmt.Fprintf(destination, "	route := app.Group(\"/api\", func(ctx *fiber.Ctx) error {\n")
 		fmt.Fprintf(destination, "		return ctx.Next()\n")
 		fmt.Fprintf(destination, "	})\n")
-		fmt.Fprintf(destination, "	route.Get(\"ping\", r.controller.PingController)\n")
+		fmt.Fprintf(destination, "	route.Get(\"/%s\", r.%sController.%sController)\n", strings.ToLower(newControllerName), newControllerName, newControllerName)
 		fmt.Fprintf(destination, "}\n\n")
-		fmt.Fprintf(destination, " func NewFiberRoutes(\n")
-		fmt.Fprintf(destination, " 	controller controllers.ExampleController,\n")
-		fmt.Fprintf(destination, " ) Routes {\n")
-		fmt.Fprintf(destination, " 	return &fiberRoutes{\n")
-		fmt.Fprintf(destination, " 		controller: controller,\n")
-		fmt.Fprintf(destination, " 	}\n")
-		fmt.Fprintf(destination, " }\n")
+
+		// NewFiberRoutes function to initialize the struct
+		fmt.Fprintf(destination, "func NewFiberRoutes(\n")
+		// fmt.Fprintf(destination, "	%s controllers.%sController,\n", newControllerName, helper.Capitalize(newControllerName))
+		fmt.Fprintf(destination, ") fiberRoutes {\n")
+		fmt.Fprintf(destination, "	return fiberRoutes{\n")
+		// fmt.Fprintf(destination, "		%s: %s,\n", newControllerName, newControllerName)
+		fmt.Fprintf(destination, "	}\n")
+		fmt.Fprintf(destination, "}\n")
 
 		fmt.Println("Created fiber_routes.go successfully:", file)
 	} else {
-		fmt.Println("File already exists!", file)
+		// If file already exists, append the new controller to struct and constructor
+		helper.ExtendFiberRoutes(file, newControllerName)
 	}
 }
+
+// func CreateFiberRoutes(projectName string) {
+// 	pathFolder := "routes"
+// 	if _, err := os.Stat(pathFolder); os.IsNotExist(err) {
+// 		err := os.Mkdir(pathFolder, os.ModePerm)
+// 		if err != nil {
+// 			fmt.Println(err)
+// 			return
+// 		}
+// 	}
+
+// 	path := pathFolder + "/"
+// 	file := path + "fiber_routes.go"
+// 	var _, err = os.Stat(file)
+
+// 	if os.IsNotExist(err) {
+// 		destination, err := os.Create(file)
+// 		if err != nil {
+// 			fmt.Println(err)
+// 			return
+// 		}
+// 		defer destination.Close()
+
+// 		fmt.Fprintf(destination, "package routes\n\n")
+// 		fmt.Fprintf(destination, "import (\n")
+// 		fmt.Fprintf(destination, " 	\"%s/%scontrollers\"\n", projectName, WORKDIR)
+// 		fmt.Fprintf(destination, "	\"github.com/gofiber/fiber/v2\"\n")
+// 		fmt.Fprintf(destination, ")\n\n")
+// 		fmt.Fprintf(destination, "type fiberRoutes struct {\n")
+// 		fmt.Fprintf(destination, " 	controller controllers.ExampleController\n")
+// 		fmt.Fprintf(destination, "}\n\n")
+// 		fmt.Fprintf(destination, "func (r fiberRoutes) Install(app *fiber.App) {\n")
+// 		fmt.Fprintf(destination, "	route := app.Group(\"api/\", func(ctx *fiber.Ctx) error {\n")
+// 		fmt.Fprintf(destination, "		return ctx.Next()\n")
+// 		fmt.Fprintf(destination, "	})\n")
+// 		fmt.Fprintf(destination, "	route.Get(\"ping\", r.controller.PingController)\n")
+// 		fmt.Fprintf(destination, "}\n\n")
+// 		fmt.Fprintf(destination, " func NewFiberRoutes(\n")
+// 		fmt.Fprintf(destination, " 	controller controllers.ExampleController,\n")
+// 		fmt.Fprintf(destination, " ) Routes {\n")
+// 		fmt.Fprintf(destination, " 	return &fiberRoutes{\n")
+// 		fmt.Fprintf(destination, " 		controller: controller,\n")
+// 		fmt.Fprintf(destination, " 	}\n")
+// 		fmt.Fprintf(destination, " }\n")
+
+// 		fmt.Println("Created fiber_routes.go successfully:", file)
+// 	} else {
+// 		fmt.Println("File already exists!", file)
+// 	}
+// }
 
 func GenerateModules(filename string) {
 	filename = strings.ToLower(filename)
@@ -716,9 +770,12 @@ func GenerateModules(filename string) {
 	CreateRequests(filename)
 	CreateResponses(filename)
 	CreateModels(filename)
+	CreateFiberRoutes(projectName, filename)
 	// CreateRepositories(filename, projectName)
 	CreateServices(filename, projectName)
 	CreateControllers(filename, projectName)
+	AddServiceAndController(projectName, filename, filename)
+	AddServiceAndControllerWithRoute(projectName, filename, filename)
 }
 
 func CreateRequests(filename string) {
@@ -987,7 +1044,7 @@ func CreateControllers(filename string, projectName string) {
 		fmt.Fprintf(destination, "\n\n")
 		fmt.Fprintf(destination, `type %sController interface{`, upperString)
 		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, `	PingController(ctx *fiber.Ctx) error`)
+		fmt.Fprintf(destination, `	%sController(ctx *fiber.Ctx) error`, upperString)
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, `}`)
 		fmt.Fprintf(destination, "\n\n")
@@ -1018,7 +1075,7 @@ func CreateControllers(filename string, projectName string) {
 		fmt.Fprintf(destination, `}`)
 		fmt.Fprintf(destination, "\n")
 
-		fmt.Fprintf(destination, `func (c *exampleController) PingController(ctx *fiber.Ctx) error {`)
+		fmt.Fprintf(destination, `func (c *%sController) %sController(ctx *fiber.Ctx) error {`, lowerString, upperString)
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, `	return ctx.JSON(fiber.Map{`)
 		fmt.Fprintf(destination, "\n")
@@ -1100,5 +1157,132 @@ func CreateExampleConfig() {
 	} else {
 		fmt.Println("File already exists!", file)
 		return
+	}
+}
+
+// ===================
+func AddServiceAndController(projectName string, serviceName string, controllerName string) {
+	file := "./main.go"
+	exists := helper.FileExists(file)
+	if !exists {
+		fmt.Println("Error: main.go file does not exist.")
+		return
+	}
+
+	// Open main.go for reading and writing
+	content, err := os.ReadFile(file)
+	if err != nil {
+		fmt.Println("Error reading main.go:", err)
+		return
+	}
+
+	lines := strings.Split(string(content), "\n")
+	modified := false
+
+	// Prepare import paths and initializations
+	importService := fmt.Sprintf("\t\"%s/src/services\"", projectName)
+	importController := fmt.Sprintf("\t\"%s/src/controllers\"", projectName)
+	upperService := strings.Title(serviceName)
+	upperController := strings.Title(controllerName)
+	serviceInit := fmt.Sprintf("\t%sService := services.New%sService(postgresConnection)", serviceName, upperService)
+	controllerInit := fmt.Sprintf("\t%sController := controllers.New%sController(%sService)", controllerName, upperController, serviceName)
+
+	// Track if imports already exist
+	hasServiceImport, hasControllerImport := false, false
+
+	// Process each line to detect existing imports or add new ones if needed
+	for i, line := range lines {
+		// Detect existing imports
+		if strings.Contains(line, fmt.Sprintf("\"%s/src/services\"", projectName)) {
+			hasServiceImport = true
+		}
+		if strings.Contains(line, fmt.Sprintf("\"%s/src/controllers\"", projectName)) {
+			hasControllerImport = true
+		}
+
+		// If import block end found and imports are missing, add them
+		if line == ")" && (!hasServiceImport || !hasControllerImport) {
+			if !hasServiceImport {
+				lines[i] = importService + "\n" + lines[i]
+			}
+			if !hasControllerImport {
+				lines[i] = importController + "\n" + lines[i]
+			}
+			modified = true
+			break
+		}
+	}
+
+	// Add service and controller initialization if not already present
+	for i, line := range lines {
+		if strings.Contains(line, "//example routes") {
+			// Insert after the example routes comment
+			lines = append(lines[:i+1], append([]string{serviceInit, controllerInit}, lines[i+1:]...)...)
+			modified = true
+			break
+		}
+	}
+
+	// Write changes if modified
+	if modified {
+		err := os.WriteFile(file, []byte(strings.Join(lines, "\n")), 0644)
+		if err != nil {
+			fmt.Println("Error writing to main.go:", err)
+		} else {
+			fmt.Println("Updated main.go with new service and controller:", serviceName, controllerName)
+		}
+	} else {
+		fmt.Println("Service and controller already exist in main.go:", serviceName, controllerName)
+	}
+}
+
+// ===================
+
+func AddServiceAndControllerWithRoute(projectName, serviceName, controllerName string) {
+	file := "./main.go"
+	exists := helper.FileExists(file)
+	if !exists {
+		fmt.Println("Error: main.go file does not exist.")
+		return
+	}
+
+	// Read main.go content
+	content, err := os.ReadFile(file)
+	if err != nil {
+		fmt.Println("Error reading main.go:", err)
+		return
+	}
+
+	lines := strings.Split(string(content), "\n")
+	modified := false
+
+	// Add the new controller to NewFiberRoutes initialization
+	newControllerVar := fmt.Sprintf("%sController", controllerName)
+	// newControllerVar := controllerName
+	for i, line := range lines {
+		if strings.Contains(line, "routes.NewFiberRoutes(") {
+			// Add new controller variable to NewFiberRoutes
+			for j := i + 1; j < len(lines); j++ {
+				if strings.Contains(lines[j], "//new web controller") {
+					// lines[j] = newControllerVar + ",\n\t\t" + lines[j]
+					lines[j] = lines[j] + "\n\t\t" + newControllerVar + ","
+					modified = true
+					break
+				}
+			}
+			break
+		}
+	}
+
+	// Rewrite file if modified
+	if modified {
+		err := os.WriteFile(file, []byte(strings.Join(lines, "\n")), 0644)
+		if err != nil {
+			fmt.Println("Error writing to main.go:", err)
+		} else {
+			fmt.Println("Updated main.go with new service, controller, and route:", serviceName, controllerName)
+		}
+	} else {
+		fmt.Println("Service, controller, and route already exist in main.go:", serviceName, controllerName)
 	}
 }
