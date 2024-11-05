@@ -689,7 +689,7 @@ func CreateFiberRoutes(projectName string, newControllerName string) {
 		fmt.Fprintf(destination, "	route := app.Group(\"/api\", func(ctx *fiber.Ctx) error {\n")
 		fmt.Fprintf(destination, "		return ctx.Next()\n")
 		fmt.Fprintf(destination, "	})\n")
-		fmt.Fprintf(destination, "	route.Get(\"/%s\", r.%s.PingController)\n", strings.ToLower(newControllerName), newControllerName)
+		fmt.Fprintf(destination, "	route.Get(\"/%s\", r.%sController.%sController)\n", strings.ToLower(newControllerName), newControllerName, newControllerName)
 		fmt.Fprintf(destination, "}\n\n")
 
 		// NewFiberRoutes function to initialize the struct
@@ -1044,7 +1044,7 @@ func CreateControllers(filename string, projectName string) {
 		fmt.Fprintf(destination, "\n\n")
 		fmt.Fprintf(destination, `type %sController interface{`, upperString)
 		fmt.Fprintf(destination, "\n")
-		fmt.Fprintf(destination, `	PingController(ctx *fiber.Ctx) error`)
+		fmt.Fprintf(destination, `	%sController(ctx *fiber.Ctx) error`, upperString)
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, `}`)
 		fmt.Fprintf(destination, "\n\n")
@@ -1075,7 +1075,7 @@ func CreateControllers(filename string, projectName string) {
 		fmt.Fprintf(destination, `}`)
 		fmt.Fprintf(destination, "\n")
 
-		fmt.Fprintf(destination, `func (c *exampleController) PingController(ctx *fiber.Ctx) error {`)
+		fmt.Fprintf(destination, `func (c *%sController) %sController(ctx *fiber.Ctx) error {`, lowerString, upperString)
 		fmt.Fprintf(destination, "\n")
 		fmt.Fprintf(destination, `	return ctx.JSON(fiber.Map{`)
 		fmt.Fprintf(destination, "\n")
@@ -1258,12 +1258,14 @@ func AddServiceAndControllerWithRoute(projectName, serviceName, controllerName s
 
 	// Add the new controller to NewFiberRoutes initialization
 	newControllerVar := fmt.Sprintf("%sController", controllerName)
+	// newControllerVar := controllerName
 	for i, line := range lines {
 		if strings.Contains(line, "routes.NewFiberRoutes(") {
 			// Add new controller variable to NewFiberRoutes
 			for j := i + 1; j < len(lines); j++ {
 				if strings.Contains(lines[j], "//new web controller") {
-					lines[j] = newControllerVar + ",\n\t\t" + lines[j]
+					// lines[j] = newControllerVar + ",\n\t\t" + lines[j]
+					lines[j] = lines[j] + "\n\t\t" + newControllerVar + ","
 					modified = true
 					break
 				}

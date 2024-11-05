@@ -49,15 +49,15 @@ func ExtendFiberRoutes(file string, newControllerName string) {
 	}
 
 	// Add the controller to the fiberRoutes struct
-	structInsert := fmt.Sprintf("	%s controllers.%sController\n", newControllerName, Capitalize(newControllerName))
+	structInsert := fmt.Sprintf("	%sController controllers.%sController\n", newControllerName, Capitalize(newControllerName))
 	data = strings.Replace(data, "type fiberRoutes struct {\n", "type fiberRoutes struct {\n"+structInsert, 1)
 
 	// Add the controller to the NewFiberRoutes function
-	constructorInsert := fmt.Sprintf("	%s controllers.%sController,\n", newControllerName, Capitalize(newControllerName))
+	constructorInsert := fmt.Sprintf("	%sController controllers.%sController,\n", newControllerName, Capitalize(newControllerName))
 	data = strings.Replace(data, "func NewFiberRoutes(\n", "func NewFiberRoutes(\n"+constructorInsert, 1)
 
 	// Add the controller field assignment to the struct initialization
-	initInsert := fmt.Sprintf("		%s: %s,\n", newControllerName, newControllerName)
+	initInsert := fmt.Sprintf("		%sController: %sController,\n", newControllerName, newControllerName)
 	data = strings.Replace(data, "return fiberRoutes{\n", "return fiberRoutes{\n"+initInsert, 1)
 
 	// Write the updated content back to fiber_routes.go
